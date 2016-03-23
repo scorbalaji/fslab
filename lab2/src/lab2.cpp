@@ -1,175 +1,252 @@
- //============================================================================
-// Name        : lab2.cpp
-// Author      : 
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Hello World in C++, Ansi-style
-//============================================================================
+#include<sys/types.h>
+#include<string.h>
 #include<fstream>
-#include<string>
-#include <iostream>
 #include<sstream>
+#include <iostream>
+#include<stdio.h>
+#include<unistd.h>
+#include<stdlib.h>
+#define max 100
 using namespace std;
-class student{
+class Student {
 	string name;
 	string usn;
 	string branch;
-	int semester;
+	int sem;
 	string buffer;
-	public: void readStudentFromConsole(){
+public :
+	void read()
+	{
 		cin.clear();
 		cin.ignore(255,'\n');
-		cout<<"Enter The Name\n"<<endl;
+		cout<<"enter the name :"<<endl;
 		getline(cin,name);
-		cout<<"Enter The USN\n"<<endl;
+		cout<<"enter the usn :"<<endl;
 		cin>>usn;
-		cout<<"Enter The Branch\n"<<endl;
-		cin>>branch;
-		cout<<"Enter The Semester\n"<<endl;
-		cin>>semester;
+		cin.clear();
+		cin.ignore(255,'\n');
+		cout<<"enter the branch :"<<endl;
+		getline(cin,branch);
+		cout<<"enter the semester :"<<endl;
+		cin>>sem;
+		cin.clear();
+		cin.ignore(255,'\n');
+		cout<<endl;
 	}
-	public: void ShowStudent(){
-		cout<<"\nName\n"<<endl;
-		cout<<name;
-		cout<<"\nUSN\n"<<endl;
-		cout<<usn;
-		cout<<"\nBranch\n"<<endl;
-		cout<<branch;
-		cout<<"\nSemester\n"<<endl;
-		cout<<semester;
-
-	}
-	public: void write()
+	void show()
 	{
-		fstream file;
-		file.open("2a.txt",ios::out|ios::app);
-		file<<buffer;
-		file.close();
+		cout<<"Name is :"<<name<<endl;
+		cout<<"usn is :"<<usn<<endl;
+		cout<<"branch is :"<<branch<<endl;
+		cout<<"semester is :"<<sem<<endl<<endl;
 	}
-	public: int search(string key)
+	void pack()
 	{
-		fstream file;
-		int flag=0,pos=0;
-		file.open("2a.txt",ios::in);
-		while(!file.eof())
-		{
-			buffer.erase();
-			getline(file,buffer);
-			unpack();
-			if(key==usn)
-			{
-				flag=1;
-				cout<<"found the record is:\n"<<buffer;
-				pos=file.tellg();
-				cout<<"\n pos ="<<pos;
-				return pos;
-
-
-
-			}
-		}
-		if(!flag)
-			cout<<"record not found";
-		return pos;
-	}
-	void unpack()
-	{
-		string sem;
-		int ch=1,i=0;
-		usn.erase();
-		while(buffer[i]!='|')
-			usn+=buffer[i++];
-		name.erase();
-		i++;
-		while(buffer[i]!='|')
-			name+=buffer[i++];
-		branch.erase();
-		i++;
-		while(buffer[i]!='|')
-			branch+=buffer[i++];
-		sem.erase();
-		i++;
-		while(buffer[i]!='$')
-			sem+=buffer[i++];
-		stringstream out(sem);
-		cout<<sem;
-
-
-	}
-	public: void pack(){
-		string sem1,temp;
-		int i,len;
+		string sem1;
+		string temp;
 		stringstream out;
-		out<<semester;
-		sem1 = out.str();
+		out<<sem;
+		sem1=out.str();
+		int i;
 		temp=usn+'|'+name+'|'+branch+'|'+sem1;
-		len=temp.size();
-		for(i=len+1;i<100;i++)
+		for(i=temp.size();i<100;i++)
 		{
-			temp +='$';
+			temp+='$';
 		}
+		cout<<temp<<endl;
 		buffer=temp;
+	}
+	void write()
+	{
+		fstream fp1;
+		char flname[max];
+		cout<<"enter the file name to write the read record"<<endl;
+		cin>>flname;
+		fp1.open(flname,ios::out|ios::app);
+		fp1<<buffer;
+		fp1<<endl;
+		fp1.close();
+	}
+	int search(string key)
+	{
+		fstream fp1;
+		string rcvusn;
+		fp1.open("data2.txt",ios::in);
+		while(!fp1.eof())
+		{
+			getline(fp1,buffer);
+			cout<<"record read"<<endl;
+			cout<<buffer<<endl;
+			int pos=fp1.tellp();
+			cout<<"position in file : "<<pos-101<<endl;
+			rcvusn=unpack();
+		if(usn==key)
+		{
+			return pos;
+			cout<<"success"<<endl;
+		}
+		else
+		{
+			cout<<"not found"<<endl;
+		}
+		}
+		return -1;
+	}
+	string unpack()
+	{
+		string s;
+
+			int i=0;
+			cout<<endl<<endl;
+			usn.erase();
+			while(buffer[i]!='|')
+			{
+				usn+=buffer[i];
+				i++;
+			}
+			i++;
+			name.erase();
+			while(buffer[i]!='|')
+			{
+				name+=buffer[i];
+				i++;
+			}
+			i++;
+			branch.erase();
+			while(buffer[i]!='|')
+			{
+				branch+=buffer[i];
+				i++;
+			}
+			i++;
+			sem=0;
+			while(buffer[i]!='$')
+			{
+				s=buffer[i];
+				stringstream convert(s);
+				convert>>sem;
+				i++;
+			}
+			cout<<"usn is :"<<usn<<endl;
+			cout<<"name is :"<<name<<endl;
+			cout<<"branch is :"<<branch<<endl;
+			cout<<"sem is :"<<sem<<endl;
+			return usn;
 	}
 	void modify(string key)
 	{
+		fstream fp1;
+		cout<<"enter the filename to be modified"<<endl;
+		char fln[10];
+		cin>>fln;
 		int choice;
-		cout<<"want to modify ? \n 1.usn 2.name 3.branch 4.semester \n enter yout choice \n";
+		int pos1=search(key);
+		if (pos1 < 0) {
+			return;
+		}
+		pos1=pos1-101;
+		cout<<"record modi pos :"<<pos1<<endl;
+		cout<<"enter the field to be modified :\n1.Name\n2.USN\n3.branch\n4.sem"<<endl;
 		cin>>choice;
 		switch(choice)
 		{
-		case 1:cout<<"usn";
-		cin>>usn;
-		break;
-		case 2:
-			cout<<"name";
+		case 1:
+			{
+				cout<<"Enter the new name :";
+				cin>>name;
+				cout<<endl;
+				pack();
+			}
 			break;
-		case 3: cout<<"branch";
-		cin>>branch;
-		break;
-		case 4: cout<<"semester";
-		cin>>semester;
-		break;
-		default:cout<<"wrong choice";
-		buffer.erase();
-		pack();
-		write();
+		case 2:
+			{
+				cout<<"Enter the new USN :";
+				cin>>usn;
+				cout<<endl;
+				pack();
 
+			}
+			break;
+		case 3:
+			{
+				cout<<"Enter the new branch :";
+				cin>>branch;
+				cout<<endl;
+				pack();
+
+			}
+			break;
+		case 4:
+			{
+				cout<<"Enter the new sem :";
+				cin>>sem;
+				cout<<endl;
+				pack();
+			}
+			break;
+		default: cout<<"Enter a valid choice"<<endl;
 		}
+		fp1.open(fln);
+		fp1.seekp(pos1,ios::beg);
+		fp1<<buffer;
+		fp1.close();
 	}
+//abcd
 };
 
-
 int main() {
-	int choice,count,len,i;
-	student s;
-	string key;
-	cout<<"\n 1. add record \n 2. modify \n 3. search \n";
-	cin>>choice;
-
-	switch(choice)
+	int choice,i;
+	Student s1;
+//	cout<<"enter your choice :\n1> insert\n2>search\n3>delete\n4>modify\n5>exit\n----"<<endl;
+	while(1)
 	{
-	case 1:
-		cout<<"how many record"<<endl;
-		cin>>count;
-		for(i=0;i<count;i++)
+		cout<<"enter your choice :\n1> insert\n2>search\n3>delete\n4>modify\n5>exit\n----"<<endl;
+		cin>>choice;
+		switch(choice)
 		{
-			cout<<"data";
-			s.readStudentFromConsole();
-			s.pack();
-			s.write();
+		case 1:
+			{
+				while(1)
+				{
+				s1.read();
+				cout<<endl<<"data recorded"<<endl;
+				s1.show();
+				s1.pack();
+				s1.write();
+				cout<<"to exit from insert mode press 0 else press any other number to continue"<<endl;
+				int a;
+				cin>>a;
+				if(a==0)
+					break;
+				}
+			}
+			break;
+		case 2:
+			{
+				string usn;
+				cout<<"enter the usn to search :";
+				cin>>usn;
+				i=s1.search(usn);
+			}
+			break;
+		case 4:
+			{
+				string usn;
+				cout<<"enter the usn to be modified :";
+				cin>>usn;
+				s1.modify(usn);
+			}
+			break;
+		case 5:
+			{
+					exit(0);
+			}
+			break;
+		default :
+			{
+				cout<<"enter a valid option"<<endl;
+			}
 		}
-
-		break;
-	case 2:
-		cout<<"enter the key \n";
-		cin>>key;
-		s.modify(key);
-		break;
-	case 3:
-		cout<<"enter the usn \n";
-		cin>>key;
-		i=s.search(key);
-		break;
 	}
 	return 0;
 }
